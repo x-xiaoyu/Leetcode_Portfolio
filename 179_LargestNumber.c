@@ -1,41 +1,69 @@
-// Problem: 114.flatten-binary-tree-to-linked-list
+// Problem: 179.Largest Number
 // Medium 2pts
 // 04/24/2024
-// Topics: Linked List, Stack, Tree, DFS, Binary Tree
+// Topics: Array, String, Greedy, Sorting
+// Description: Given a list of non-negative integers nums, arrange them such that they form the largest number and return it.
+// Since the result may be very large, so you need to return a string instead of an integer.
 
-// Description: Given the root of a binary tree, flatten the tree into a "linked list":
-//The "linked list" should use the same TreeNode class 
-//where the right child pointer points to the next node in the list and the left child pointer is always null.
-//The "linked list" should be in the same order as a pre-order traversal of the binary tree.
+// Links:https://leetcode.com/problems/largest-number/description/
 
-// Links:https://leetcode.com/problems/flatten-binary-tree-to-linked-list/description/
+int compare(const void* a, const void* b) {
+    // Create buffer sufficiently large to hold two concatenated numbers
+    char order1[24] = {0}, order2[24] = {0};
+    // Concatenate strings in both possible orders
+    strcat(strcat(strcpy(order1, *(const char**)a), *(const char**)b), "\0");
+    strcat(strcat(strcpy(order2, *(const char**)b), *(const char**)a), "\0");
+    // Return the order that produces the larger number
+    return strcmp(order2, order1);
+}
 
-void flatten(struct TreeNode* root) {
-    //If the root is empty or is a leaf node, just return it.
-    if (root == NULL || (root->left == NULL && root->right == NULL)) {
-        return;
-    }
+char* largestNumber(int* nums, int numsSize) {
+    if (numsSize == 0) return strdup(""); // Handle empty input
 
-    // If the left subtree is not empty, first unfold the left subtree
-    if (root->left != NULL) {
-        flatten(root->left);
+    // Convert integers to strings
+    char** asStrings = (char**) malloc(numsSize * sizeof(char*));
+    if (!asStrings) return NULL; // Check for malloc failure
 
-        // Temporarily saving the right subtree
-        struct TreeNode* tempRight = root->right;
-        // Move the expanded left subtree to the right subtree position
-        root->right = root->left;
-        root->left = NULL; // Empty the left subtree
-
-        // Find the rightmost node of the current right subtree
-        struct TreeNode* current = root->right;
-        while (current->right != NULL) {
-            current = current->right;
+    for (int i = 0; i < numsSize; i++) {
+        asStrings[i] = (char*) malloc(12 * sizeof(char)); // Each int can be up to 10 digits plus sign and null terminator
+        if (!asStrings[i]) { // Check for malloc failure
+            for (int j = 0; j < i; j++) free(asStrings[j]); // Free any previously allocated memory
+            free(asStrings);
+            return NULL;
         }
-
-        // Attach the original right subtree to the rightmost node of the current right subtree.
-        current->right = tempRight;
+        sprintf(asStrings[i], "%d", nums[i]);
     }
 
-    // Expand the original right subtree
-    flatten(root->right);
+    // Sort strings using custom comparator
+    qsort(asStrings, numsSize, sizeof(char*), compare);
+
+    // Special case: check if the largest number is "0"
+    if (strcmp(asStrings[0], "0") == 0) {
+        free(asStrings[0]); // Clean up
+        free(asStrings);
+        return strdup("0");
+    }
+
+    // Calculate total length of the result string
+    int totalLength = 1; // Start with 1 for the null terminator
+    for (int i = 0; i < numsSize; i++) {
+        totalLength += strlen(asStrings[i]);
+    }
+
+    // Concatenate sorted strings into the final result
+    char* result = malloc(totalLength);
+    if (!result) { // Check for malloc failure
+        for (int i = 0; i < numsSize; i++) free(asStrings[i]);
+        free(asStrings);
+        return NULL;
+    }
+    result[0] = '\0'; // Initialize the result string
+
+    for (int i = 0; i < numsSize; i++) {
+        strcat(result, asStrings[i]); // Append current string
+        free(asStrings[i]); // Free memory as we go
+    }
+    free(asStrings);
+
+    return result;
 }
