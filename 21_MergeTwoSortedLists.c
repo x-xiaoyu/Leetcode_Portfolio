@@ -1,6 +1,6 @@
 // Problem: 21.merge-two-sorted-lists
 // Easy 1pts
-// 04/12/2024
+// 04/23/2024
 // Topics: Linked List, Recursion
 
 // Description: You are given the heads of two sorted linked lists list1 and list2.
